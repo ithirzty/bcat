@@ -1,0 +1,58 @@
+pySpecialVals = []cpstring {
+    "None"
+}
+
+pyKeywords = []cpstring{
+    "and", "as", "assert", "break", "class", "continue", "def", "del", "elif", "else", "except", "False", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "None", "nonlocal", "not", "or", "pass", "raise", "return", "True", "try", "while", "with", "yield"
+}
+
+LANG_PY_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
+    k = *kp
+    j=0; for j < len(l), j++ {
+        found = false
+        for k < len(tokens), k++ {
+            if tokens[k].pos == (j + globalPos) {
+                found = true
+                break
+            } else if tokens[k].pos > (j + globalPos) {
+                break
+            }
+        }
+
+        if l[j] == '#' {
+            appendStr(buff, colors.commColor)
+            appendStr(buff, arrAsStr(l[j:]))
+            break
+        }
+
+        if found == true {
+            color = ""
+            if tokens[k].type == TOKEN_TYPE_VAR {
+                if k+1 < len(tokens) && tokens[k+1].cont == "(" {
+                    color = colors.fnColor
+                } else if inArrStr(tokens[k].ogCont, pySpecialVals) {
+                    color = colors.constColor
+                } else if inArrStr(tokens[k].ogCont, pyKeywords) {
+                    color = colors.kwColor
+                } else {
+                    color = colors.varColor
+                }
+            } else if tokens[k].type == TOKEN_TYPE_BOOL {
+                color = colors.constColor
+            } else if tokens[k].type == TOKEN_TYPE_STR && tokens[k].line == tokens[k].begLine {
+                color = colors.strColor
+            } else if tokens[k].type == TOKEN_TYPE_INT || tokens[k].type == TOKEN_TYPE_FLOAT {
+                color = colors.numColor
+            } else if tokens[k].type == TOKEN_TYPE_CAST {
+                color = colors.typeColor
+            }
+            j += strlen(tokens[k].ogCont) - 1
+            appendStr(buff, color+tokens[k].ogCont+colors.defaultColor)
+            continue
+        }
+
+
+        buff[len(buff)] = l[j]
+    }
+    *kp = k
+}

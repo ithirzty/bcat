@@ -1,0 +1,146 @@
+#import "iostream.bah"
+#import "string.bah"
+#import "flags.bah"
+#import "path.bah"
+
+#include "lexer.bah"
+#include "colors.bah"
+
+const bcatDir = ".bcat"
+
+struct languageSupport {
+    ext: cpstring
+    handle: function([]char,[]char,[]Tok,int,int*)
+}
+
+supportedLangs = []languageSupport
+
+inArrStr(s cpstring, arr []cpstring) bool {
+    return s in arr
+}
+
+//Include all languages//
+
+#include "languages/bah.bah"
+#include "languages/c.bah"
+#include "languages/go.bah"
+#include "languages/rust.bah"
+#include "languages/python.bah"
+#include "languages/markdown.bah"
+#include "languages/json.bah"
+#include "languages/javascript.bah"
+
+/////////////////////////
+
+handleFile(fn cpstring) {
+    fs = fileStream{}
+    fs.open(fn, "r")
+    code = fs.readContent()
+    fs.close()
+
+    handleFn function(ptr,ptr,ptr,int,int*) = null
+
+    ln = toLower(string(fn))
+
+    i=0; for i < len(supportedLangs), i++ {
+        sl = supportedLangs[i]
+        if ln.hasSuffix("."+sl.ext) {
+            handleFn = <ptr>sl.handle
+            break
+        }
+    }
+
+    if handleFn == null {
+        println(code)
+        return
+    }
+
+    //split lines
+    lines = [][]char
+    currLine = []char
+    le = strlen(code)
+    i=0; for i < le, i++ {
+        if code[i] == <char>10 {
+            lines[len(lines)] = currLine
+            currLine = []char
+            continue
+        }
+        currLine[len(currLine)] = code[i]
+    }
+    lines[len(lines)] = currLine
+
+    //generate tokens
+    tokens = lexer(code, le)
+
+    tab = ""
+    le = strlen(intToStr(len(lines)))
+    i=0; for i < le, i++ {
+        tab += " "
+    }
+
+    under = ""
+    le = strlen(fn)
+    i=0; for i < le, i++ {
+        under += "─"
+    }
+
+    println(colors.lineColor+tab+fn+" │\n"+tab+"╭"+under+"╯")
+
+
+    buff = []char
+    k=0
+    globalPos = 0
+    i=0; for i < len(lines), i++ {
+        clear(buff)
+        handleFn(lines[i], buff, tokens, globalPos, &k)
+        buff[len(buff)] = null
+        nb = intToStr(i+1)
+        println(tab[strlen(nb):] + colors.lineColor + nb+"│"+colors.defaultColor+arrAsStr(buff))
+        globalPos += len(lines[i]) + 1
+    }
+
+    under = ""
+    le = strlen(tab)
+    i=0; for i < le, i++ {
+        under += "─"
+    }
+
+    println(colors.lineColor+under+"╯")
+
+}
+
+
+main(args []cpstring) int {
+    path = ""
+    if args[0] == "bcat" {
+        path = getenv("HOME")+"/"+bcatDir
+    } else {
+        path = absPath(args[0])
+        l = strlen(path)
+        i=l-1; for i >= 0, i-- {
+            if path[i] == '/' {
+                break
+            }
+        }
+        path = path[:i]
+    }
+    colors.parse(path+"/colors.cfg")
+
+
+    i=0; for i < len(__Bah_fnNames), i++ {
+        fn = __Bah_fnNames[i]
+        if string(fn.n).hasPrefix("LANG_") {
+            parts = splitString(string(fn.n), "_")
+            supportedLangs[len(supportedLangs)] = languageSupport {
+                ext: toLower(parts[1]).str()
+                handle: fn.p
+            }
+        }
+    }
+
+    i=1; for i < len(args), i++ {
+        handleFile(args[i])
+    }
+    
+    return 0
+}

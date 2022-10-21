@@ -1,0 +1,64 @@
+goTypes = []cpstring{
+    "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "int", "uint", "rune", "byte", "uintptr"
+}
+
+goSpecialVals = []cpstring {
+    "null"
+}
+
+goKeywords = []cpstring{
+    "break", "case", "chan", "const", "continue", "default", "defer", "else", "fallthrough", "for", "func", "go", "goto", "if", "import", "interface", "map", "package", "range", "return", "select", "struct", "switch", "type", "var"
+}
+
+LANG_GO_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
+    k = *kp
+    j=0; for j < len(l), j++ {
+        found = false
+        for k < len(tokens), k++ {
+            if tokens[k].pos == (j + globalPos) {
+                found = true
+                break
+            } else if tokens[k].pos > (j + globalPos) {
+                break
+            }
+        }
+        if found == true {
+            color = ""
+            if tokens[k].type == TOKEN_TYPE_VAR {
+                if k+1 < len(tokens) && tokens[k+1].cont == "(" {
+                    color = colors.fnColor
+                } else if inArrStr(tokens[k].ogCont, goTypes) {
+                    color = colors.typeColor
+                } else if inArrStr(tokens[k].ogCont, goSpecialVals) {
+                    color = colors.constColor
+                } else if inArrStr(tokens[k].ogCont, goKeywords) {
+                    color = colors.kwColor
+                } else {
+                    color = colors.varColor
+                }
+            } else if tokens[k].type == TOKEN_TYPE_BOOL {
+                color = colors.constColor
+            } else if tokens[k].type == TOKEN_TYPE_STR && tokens[k].line == tokens[k].begLine {
+                color = colors.strColor
+            } else if tokens[k].type == TOKEN_TYPE_INT || tokens[k].type == TOKEN_TYPE_FLOAT {
+                color = colors.numColor
+            } else if tokens[k].type == TOKEN_TYPE_CAST {
+                color = colors.typeColor
+            } else if tokens[k].type == TOKEN_TYPE_KEYWORD && tokens[k].ogCont[0] == '#' {
+                color = colors.hashColor
+            }
+            j += strlen(tokens[k].ogCont) - 1
+            appendStr(buff, color+tokens[k].ogCont+colors.defaultColor)
+            continue
+        }
+
+        if l[j] == '/' && j+1 < len(l) && l[j+1] == '/' {
+            appendStr(buff, colors.commColor)
+            appendStr(buff, arrAsStr(l[j:]))
+            break
+        }
+
+        buff[len(buff)] = l[j]
+    }
+    *kp = k
+}

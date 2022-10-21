@@ -1,0 +1,9 @@
+//Bah sample
+#import "iostream.bah"
+
+main(args []cpstring) int {
+
+    println("test")
+
+    return 0
+}

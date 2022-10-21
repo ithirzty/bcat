@@ -1,0 +1,87 @@
+LANG_MD_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
+    if len(l) == 0 {
+        return
+    }
+    if l[0] == '#' {
+        appendStr(buff, asciiBold+colors.kwColor+arrToStr(l)+asciiReset+colors.defaultColor)
+        return
+    }
+
+    i=0
+    
+    if l[0] == '>' {
+        appendStr(buff, colors.commColor+">"+colors.defaultColor)
+        i++
+    } else if l[0] == '-' {
+        appendStr(buff, colors.constColor+"-"+colors.defaultColor)
+        i++
+    }
+
+    for i < len(l), i++ {
+        c = l[i]
+
+        if c == '*' || c == '_' {
+            twice = false
+            if i+1 < len(l) && l[i+1] == c {
+                twice = true
+                appendStr(buff, colors.constColor)
+                appendStr(buff, asciiBold)
+                buff[len(buff)] = c
+                i++
+            } else {
+                appendStr(buff, colors.varColor)
+            }
+            buff[len(buff)] = c
+
+            i++
+            for i < len(l), i++ {
+                buff[len(buff)] = l[i]
+                if twice == false && l[i] == c {
+                    break
+                } else if twice == true && l[i-1] == l[i] && l[i] == c {
+                    break
+                }
+            }
+
+            appendStr(buff, asciiReset)
+            appendStr(buff, colors.defaultColor)
+            continue
+        }
+
+        if c == '[' || (c == '!' && i+1 < len(l) && l[i+1] == '[') {
+            appendStr(buff, colors.hashColor)
+            if c == '[' {
+                buff[len(buff)] = c
+                i++
+            } else {
+                buff[len(buff)] = c
+                buff[len(buff)] = '['
+                i += 2
+            }
+            stage = 0
+            for i < len(l), i++ {
+                if l[i] == ']' {
+                    stage = 1
+                } else if stage == 1 && l[i] == '(' {
+                    buff[len(buff)] = l[i]
+                    appendStr(buff, asciiUnderline)
+                    stage = 2
+                    continue
+                }
+                if stage == 2 && l[i] == ')' {
+                    stage = 3
+                    appendStr(buff, asciiReset)
+                    appendStr(buff, colors.hashColor)
+                    buff[len(buff)] = l[i]
+                    break
+                }
+                buff[len(buff)] = l[i]
+            }
+            appendStr(buff, colors.defaultColor)
+            continue
+        }
+
+        buff[len(buff)] = c
+    }
+
+}

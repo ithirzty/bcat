@@ -1,0 +1,107 @@
+const asciiEscape = "\033["
+const asciiReset = "\033[m"
+const asciiBold = "\033[1m"
+const asciiUnderline = "\033[4m"
+
+rgbColor(r int, g int, b int) cpstring {
+    return asciiEscape+"38;2;"+intToStr(r)+";"+intToStr(g)+";"+intToStr(b)+"m"
+}
+
+#eval rgbColor
+
+struct colorsTag {
+    defaultColor: cpstring
+    bgColor: cpstring
+    varColor: cpstring
+    fnColor: cpstring
+    typeColor: cpstring
+    strColor: cpstring
+    numColor: cpstring
+    kwColor: cpstring
+    hashColor: cpstring
+    constColor: cpstring
+    commColor: cpstring
+    lineColor: cpstring
+
+    parse(path cpstring) {
+        fs = fileStream{}
+        fs.open(path, "r")
+        cont = fs.readContent()
+        lines = splitString(string(cont), "\n")
+
+        i=0; for i < len(lines), i++ {
+            l = lines[i]
+            if l.count("#") > 0 {
+                l = string(splitStringBefore(l, "#"))
+            }
+            l.trim()
+            if l.length == 0 {
+                continue
+            }
+            parts = splitString(l, ":")
+            if len(parts) != 2 {
+                continue
+            }
+            parts[1].trim()
+            r cpstring = evalRaw(parts[1].str(), null)
+            if <ptr>r == null {
+                continue
+            }
+            parts[0].trim()
+            for isSpace(parts[0].charAt(parts[0].length-1)) {
+                parts[0].trimRight(1)
+            }
+            n = parts[0].str()
+            if n == "default" {
+                this.defaultColor = r
+            } else if n == "background" {
+                this.bgColor = r
+            } else if n == "variable" {
+                this.varColor = r
+            } else if n == "function" {
+                this.fnColor = r
+            } else if n == "type" {
+                this.typeColor = r
+            } else if n == "string" {
+                this.strColor = r
+            } else if n == "number" {
+                this.numColor = r
+            } else if n == "keyword" {
+                this.kwColor = r
+            } else if n == "directive" {
+                this.hashColor = r
+            } else if n == "constant" {
+                this.constColor = r
+            } else if n == "comment" {
+                this.commColor = r
+            } else if n == "lineNumber" {
+                this.lineColor = r
+            }
+        }
+
+        fs.close()
+    }
+
+}
+
+colors = colorsTag{}
+
+appendStr(a []char, b cpstring) uint32 {
+    i=0; for b[i] != null, i++ {
+        a[len(a)] = b[i]
+    }
+    return i
+}
+
+// defaultColor: []int rgbColor(218, 215, 218)
+// bgColor: []int rgbColor(33,33,33)
+// varColor: []int rgbColor(110,206,208)
+// fnColor: []int rgbColor(233,228,138)
+// typeColor: []int rgbColor(76,175,128)
+// strColor: []int rgbColor(248,135,80)
+// numColor: []int rgbColor(127,208,149)
+// kwColor: []int rgbColor(206,142,204)
+// hashColor: []int rgbColor(110,110,110)
+// constColor: []int rgbColor(33,143,236)
+// commColor: []int rgbColor(84,155,54)
+// lineColor: []int rgbColor(90, 50, 50)
