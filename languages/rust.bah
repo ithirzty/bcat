@@ -32,6 +32,9 @@ LANG_RS_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
             if tokens[k].type == TOKEN_TYPE_VAR {
                 if k+1 < len(tokens) && tokens[k+1].cont == "(" {
                     color = colors.fnColor
+                } else if k+2 < len(tokens) && tokens[k+1].cont == "!" && tokens[k+2].cont == "(" {
+                    color = colors.fnColor
+                    tokens[k].ogCont += "!"
                 } else if inArrStr(tokens[k].ogCont, rustTypes) {
                     color = colors.typeColor
                 } else if inArrStr(tokens[k].ogCont, rustSpecialVals) {
