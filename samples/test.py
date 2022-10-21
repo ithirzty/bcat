@@ -1,5 +1,5 @@
 # Python test
 def main():
-    print("test\n")
+    print("test\n", 'test')
 
 main()

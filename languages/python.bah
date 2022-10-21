@@ -19,6 +19,12 @@ LANG_PY_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
             }
         }
 
+        if l[j] == <char>34 && j+2 < len(l) && l[j+1] == <char>34 && l[j+2] == <char>34 {
+            appendStr(buff, "\"\"\"")
+            j += 2
+            continue
+        }
+
         if l[j] == '#' {
             appendStr(buff, colors.commColor)
             appendStr(buff, arrAsStr(l[j:]))

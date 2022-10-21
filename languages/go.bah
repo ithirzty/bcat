@@ -22,6 +22,13 @@ LANG_GO_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
                 break
             }
         }
+
+        if l[j] == '/' && j+1 < len(l) && l[j+1] == '/' {
+            appendStr(buff, colors.commColor)
+            appendStr(buff, arrAsStr(l[j:]))
+            break
+        }
+
         if found == true {
             color = ""
             if tokens[k].type == TOKEN_TYPE_VAR {
@@ -50,12 +57,6 @@ LANG_GO_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
             j += strlen(tokens[k].ogCont) - 1
             appendStr(buff, color+tokens[k].ogCont+colors.defaultColor)
             continue
-        }
-
-        if l[j] == '/' && j+1 < len(l) && l[j+1] == '/' {
-            appendStr(buff, colors.commColor)
-            appendStr(buff, arrAsStr(l[j:]))
-            break
         }
 
         buff[len(buff)] = l[j]
