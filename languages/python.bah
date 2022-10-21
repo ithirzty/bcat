@@ -6,6 +6,10 @@ pyKeywords = []cpstring{
     "and", "as", "assert", "break", "class", "continue", "def", "del", "elif", "else", "except", "False", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "None", "nonlocal", "not", "or", "pass", "raise", "return", "True", "try", "while", "with", "yield"
 }
 
+pyQuotes = []char {
+    <char>34, <char>39
+}
+
 LANG_PY_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
     k = *kp
     j=0; for j < len(l), j++ {
@@ -19,8 +23,10 @@ LANG_PY_handle(l []char, buff []char, tokens []Tok, globalPos int, kp int*) {
             }
         }
 
-        if l[j] == <char>34 && j+2 < len(l) && l[j+1] == <char>34 && l[j+2] == <char>34 {
-            appendStr(buff, "\"\"\"")
+        if l[j] in pyQuotes && j+2 < len(l) && l[j+1] == l[j] && l[j+2] == l[j] {
+            buff[len(buff)] = l[j]
+            buff[len(buff)] = l[j]
+            buff[len(buff)] = l[j]
             j += 2
             continue
         }

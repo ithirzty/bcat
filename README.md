@@ -1,5 +1,8 @@
 # bcat
-This is a lightweight alternative to cat with syntax highlighting.
+<center>
+A lightweight alternative to cat with syntax highlighting.
+<img src="./assets/capture.png" alt="screenshot"/>
+</center>
 
 This program has been built on the [bah-snippets](https://github.com/ithirzty/bah-snippets) program, itself built on the [Bah's lexer](https://github.com/ithirzty/bah).
 
